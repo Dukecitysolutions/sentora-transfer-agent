@@ -57,7 +57,7 @@ fi
 # -------------------------------------------------------------------------------
 
 # Get Remote hostname/ip info
-read -e -p "Enter the HOSTNAME/IP of REMOTE SERVER you want to Transfer Sentora panel too: " PANEL_FQDN
+read -e -p "Enter HOSTNAME/IP of REMOTE SERVER to Transfer Sentora panel too: " PANEL_FQDN
 
 # SSH key setup for client/server
 mkdir -p ~/.ssh
