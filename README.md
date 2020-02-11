@@ -57,4 +57,4 @@ We are currently building a support page to help with any issues. Please check b
 
 ## Disclaimer
 
-Besides the usual disclaimer in the license, we want to specifically emphasize that the authors, and any organizations the authors are associated with, can not be held responsible for data-loss caused by possible malfunctions of Sentora Transfer Agent (STA).
+Besides the usual disclaimer in the license, we want to specifically emphasize that the authors, and any organizations the authors are associated with, can not be held responsible for data-loss caused by possible malfunctions of Sentora Transfer Agent (STA). There is no warranty. Use at your own risk.
