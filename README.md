@@ -27,8 +27,9 @@ Run-
 bash <(curl -L -Ss http://zppy-repo.dukecitysolutions.com/repo/sentora-transfer/sentora_transfer.sh)
 ```
 
-Follow these steps:
-BEFORE YOU BEGIN:
+Follow these steps-
+
+BEFORE YOU BEGIN-
 Make sure you can SSH into each server with ROOT user. ONLY works as ROOT user. NO SUDO sorry.
 
 1. Enter REMOTE hostname/ip you want to transfer too.
