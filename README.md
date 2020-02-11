@@ -29,7 +29,7 @@ Ubuntu 14.04, 16.04, 18.04
 
 ## How to use Sentora Transfer Agent
 
-Run-
+Run this script on the server you are moving-
 ```
 bash <(curl -L -Ss http://zppy-repo.dukecitysolutions.com/repo/sentora-transfer/sentora_transfer.sh)
 ```
