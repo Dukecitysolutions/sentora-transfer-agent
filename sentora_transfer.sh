@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SSTA_VERSION="0.1.0-BETA"
+PANEL_PATH="/etc/sentora"
 
 #--- Display the 'welcome' splash/user warning info..
 echo ""
@@ -72,11 +73,24 @@ remotemysqlpassword=$($SSH_REMOTE cat /etc/sentora/panel/cnf/db.php | grep "pass
 REMOTE_OS=$($SSH_REMOTE "lsb_release -d")
 LOCAL_OS=$(lsb_release -d)
 
+# Check OS's Match. Will add support to transfer to other OS's SOON.
 if [ "$LOCAL_OS" == "$REMOTE_OS" ]; then
-    echo "- Remote OS Matched, processing..."
+    echo -e "\n- Remote OS MATCH, processing...\n"
 else
-    echo "Remote server OS does not match local server - Remote server Detected : $REMOTE_OS  $REMOTE_VER  $REMOTE_ARCH..."
+    echo -e "\nRemote server OS DOES NOT MATCH local server - Remote server Detected : $REMOTE_OS  $REMOTE_VER  $REMOTE_ARCH..."
 	echo "Local server OS - Detected : $OS  $VER  $ARCH, aborting..."
+    exit 1
+fi
+
+# Check REMOTE server has same Sentora version.
+SEN_VER=$($PANEL_PATH/panel/bin/setso --show dbversion)
+REMOTE_SEN_VER=$($SSH_REMOTE $PANEL_PATH/panel/bin/setso --show dbversion)
+
+if [ "$SEN_VER" == "$REMOTE_SEN_VER" ]; then
+    echo -e "\n- Remote Sentora version MATCHED, processing...\n"
+else
+    echo -e "\nRemote Sentora version DOES NOT MATCH local server - Remote server Detected : $REMOTE_SEN_VER..."
+	echo "Local Sentora version - Detected : $SEN_VER, aborting..."
     exit 1
 fi
 
@@ -98,6 +112,7 @@ mysqldump -uroot -p"$mysqlpassword" --all-databases > ~/sentora_backup.sql
 # -------------------------------------------------------------------------------
 
 # Transfer Sentora needed Folders/files
+echo -e "\nStarting transfer of files ...\n"
 rsync -v -a -e ssh ~/passwords.txt root@$PANEL_FQDN:~/passwords.txt
 rsync -v -a -e ssh /etc/sentora/ root@$PANEL_FQDN:/etc/sentora
 rsync -v -a -e ssh /var/sentora/hostdata/ root@$PANEL_FQDN:/var/sentora/hostdata
@@ -109,7 +124,8 @@ if [ -d "/etc/letsencrypt/" ]; then
     rsync -v -a -r -z -P -e ssh /etc/letsencrypt/ root@$PANEL_FQDN:/etc/letsencrypt
 fi
 
-# Transfer DB 	
+# Transfer DB
+echo -e "\nStarting transfer of Databases ...\n"
 rsync -v -a -e ssh ~/sentora_backup.sql root@$PANEL_FQDN:~/sentora_backup.sql
 
 # -------------------------------------------------------------------------------
