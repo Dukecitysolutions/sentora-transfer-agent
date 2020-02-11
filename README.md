@@ -20,6 +20,12 @@ Automates tasks to new server like:
 * Exporting/Importing databases
 * Checking Databases for issues
 
+### Supported OS:
+
+CentOS 6 & 7
+
+Ubuntu 14.04, 16.04, 18.04
+
 ## How to use Sentora Transfer Agent
 
 Run-
