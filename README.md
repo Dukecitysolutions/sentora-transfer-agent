@@ -1,10 +1,10 @@
 # Sentora Transfer Agent (STA)
 
-* Version: 0.1.0-BETA
+* Version: 0.1.1-BETA
 
 ## Description
 
-Transfer all Sentora DATA to another Sentora server with the SAME OS. Script does all the work for you Just follow the steps.
+Transfer all Sentora DATA to another Sentora server with the SAME OS & SAME Sentora VERSION. Script does all the work for you Just follow the steps.
 
 Sentora Transfer Agent (STA) Copies all folder/files/DB below -
 * /etc/sentora
@@ -19,6 +19,7 @@ Automates tasks to new server like:
 * Changing MySQL root password
 * Exporting/Importing databases
 * Checking Databases for issues
+* Changing Sentora DB x_settings for OS switching. COMING SOON!!!
 
 ### Supported OS:
 
