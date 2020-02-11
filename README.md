@@ -4,7 +4,7 @@
 
 ## Description
 
-Transfer all Sentora DATA to another Sentora server with the same OS. Script does all the work for you Just follow the steps.
+Transfer all Sentora DATA to another Sentora server with the SAME OS. Script does all the work for you Just follow the steps.
 
 Sentora Transfer Agent (STA) Copies all folder/files/DB below -
 * /etc/sentora
