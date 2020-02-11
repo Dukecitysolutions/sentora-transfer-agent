@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SSTA_VERSION="0.1.0-BETA"
+SSTA_VERSION="0.1.1-BETA"
 PANEL_PATH="/etc/sentora"
 
 #--- Display the 'welcome' splash/user warning info..
@@ -70,11 +70,28 @@ SSH_REMOTE="ssh root@$PANEL_FQDN" # check this
 
 # Get other remote server info
 remotemysqlpassword=$($SSH_REMOTE cat /etc/sentora/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
-REMOTE_OS=$($SSH_REMOTE "lsb_release -d")
-LOCAL_OS=$(lsb_release -d)
+
+# Get Remote OS version
+if $SSH_REMOTE [ -f /etc/centos-release ]; then
+    REMOTE_OS="CentOs"
+    REMOTE_VERFULL=$($SSH_REMOTE "sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release")
+    REMOTE_VER=${REMOTE_VERFULL:0:1} # return 6 or 7
+elif $SSH_REMOTE [ -f /etc/lsb-release ]; then
+    REMOTE_OS=$($SSH_REMOTE grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
+    REMOTE_VER=$($SSH_REMOTE grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
+elif $SSH_REMOTE [ -f /etc/os-release ]; then
+    REMOTE_OS=$($SSH_REMOTE grep -w ID /etc/os-release | sed 's/^.*=//')
+    REMOTE_VER=$($SSH_REMOTE grep VERSION_ID /etc/os-release | sed 's/^.*"\(.*\)"/\1/')
+else
+    REMOTE_OS=$(uname -s)
+    REMOTE_VER=$(uname -r)
+fi
+
+#REMOTE_OS=$($SSH_REMOTE "lsb_release -d")
+#LOCAL_OS=$(lsb_release -d)
 
 # Check OS's Match. Will add support to transfer to other OS's SOON.
-if [ "$LOCAL_OS" == "$REMOTE_OS" ]; then
+if [ "$OS" == "$REMOTE_OS" ]; then
     echo -e "\n- Remote OS MATCH, processing...\n"
 else
     echo -e "\nRemote server OS DOES NOT MATCH local server - Remote server Detected : $REMOTE_OS  $REMOTE_VER  $REMOTE_ARCH..."
@@ -138,7 +155,6 @@ rsync -v -a -e ssh ~/sentora_backup.sql root@$PANEL_FQDN:~/sentora_backup.sql
 ##Setup root user password, restore DB & check DB
 
 # Setup/change new server Mysql root password to current password
-
 while ! $SSH_REMOTE "mysql -u root -p'$remotemysqlpassword' -e ';'" ; do
 	read -p "Cant connect to REMOTE MYSQL, please give root password to REMOTE SQL SERVER or press ctrl-C to abort: " remotemysqlpassword
 done
@@ -150,6 +166,27 @@ $SSH_REMOTE "mysql -u root -p'$mysqlpassword' < ~/sentora_backup.sql"
 
 ## Check DB for errors
 $SSH_REMOTE "mysqlcheck --all-databases -u root -p'$mysqlpassword'" 
+
+# Change Sentora x_settings if needed for other OS converting
+if [ "$OS" != "$REMOTE_OS" ]; then
+	if [[ "$REMOTE_OS" = "CentOs" ]]; then	
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_dir "/etc/named/"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_service "named"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set httpd_exe "httpd"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set apache_sn "httpd"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_file "/var/spool/cron/apache"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_path "/var/spool/cron/apache"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_user "apache"'
+	elif [[ "$REMOTE_OS" = "Ubuntu" ]]; then	
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_dir "/etc/bind/"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_service "bind9"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set httpd_exe "apache2"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set apache_sn "apache2"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_file "/var/spool/cron/crontabs/www-data"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_path "/var/spool/cron/crontabs/www-data"'
+		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_user "www-data"'
+	fi
+fi
 
 ## Setup Folder/files & permissions if needed
 
