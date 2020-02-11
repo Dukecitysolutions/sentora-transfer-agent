@@ -129,7 +129,7 @@ mysqldump -uroot -p"$mysqlpassword" --all-databases > ~/sentora_backup.sql
 # -------------------------------------------------------------------------------
 
 # Transfer Sentora needed Folders/files
-echo -e "\nStarting transfer of files ...\n"
+echo -e "\n-Starting transfer of files ...\n"
 rsync -v -a -e ssh ~/passwords.txt root@$PANEL_FQDN:~/passwords.txt
 rsync -v -a -e ssh /etc/sentora/ root@$PANEL_FQDN:/etc/sentora
 rsync -v -a -e ssh /var/sentora/hostdata/ root@$PANEL_FQDN:/var/sentora/hostdata
@@ -142,7 +142,7 @@ if [ -d "/etc/letsencrypt/" ]; then
 fi
 
 # Transfer DB
-echo -e "\nStarting transfer of Databases ...\n"
+echo -e "\n-Starting transfer of Databases ...\n"
 rsync -v -a -e ssh ~/sentora_backup.sql root@$PANEL_FQDN:~/sentora_backup.sql
 
 # -------------------------------------------------------------------------------
@@ -159,17 +159,21 @@ while ! $SSH_REMOTE "mysql -u root -p'$remotemysqlpassword' -e ';'" ; do
 	read -p "Cant connect to REMOTE MYSQL, please give root password to REMOTE SQL SERVER or press ctrl-C to abort: " remotemysqlpassword
 done
 echo -e "Connection mysql ok"
+echo -e "\n-Changing MySQL root password ...\n"
 $SSH_REMOTE "mysqladmin -u root -p'$remotemysqlpassword' password '$mysqlpassword'"
 
 ## Import DB
+echo -e "\n-Starting importing of Databases ...\n"
 $SSH_REMOTE "mysql -u root -p'$mysqlpassword' < ~/sentora_backup.sql"
 
 ## Check DB for errors
+echo -e "\n-Checking Databases for issues ...\n"
 $SSH_REMOTE "mysqlcheck --all-databases -u root -p'$mysqlpassword'" 
 
 # Change Sentora x_settings if needed for other OS converting
 if [ "$OS" != "$REMOTE_OS" ]; then
-	if [[ "$REMOTE_OS" = "CentOs" ]]; then	
+	if [[ "$REMOTE_OS" = "CentOs" ]]; then
+		echo -e "\n-Changing Sentora x_settings for CentOS ...\n"
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_dir "/etc/named/"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_service "named"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set httpd_exe "httpd"'
@@ -177,7 +181,8 @@ if [ "$OS" != "$REMOTE_OS" ]; then
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_file "/var/spool/cron/apache"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_path "/var/spool/cron/apache"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set cron_reload_user "apache"'
-	elif [[ "$REMOTE_OS" = "Ubuntu" ]]; then	
+	elif [[ "$REMOTE_OS" = "Ubuntu" ]]; then
+		echo -e "\n-Changing Sentora x_settings for Ubuntu ...\n"
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_dir "/etc/bind/"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set bind_service "bind9"'
 		$SSH_REMOTE '$PANEL_PATH/panel/bin/setso --set httpd_exe "apache2"'
