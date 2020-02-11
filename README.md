@@ -54,3 +54,7 @@ If script stops on "ENTER PASSWORD:" Enter REMOTE MYSQL root password. This shou
 ## Getting support
 
 We are currently building a support page to help with any issues. Please check back soon for updates.
+
+##Disclaimer
+
+Besides the usual disclaimer in the license, we want to specifically emphasize that the authors, and any organizations the authors are associated with, can not be held responsible for data-loss caused by possible malfunctions of Sentora Transfer Agent (STA).
