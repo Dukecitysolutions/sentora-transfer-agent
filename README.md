@@ -1,6 +1,6 @@
 # Sentora Transfer Agent (STA)
 
-* Version: 0.1.0
+* Version: 0.1.0-BETA
 
 ## Description
 
