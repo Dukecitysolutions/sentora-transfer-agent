@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SSTA_VERSION="0.1.1-BETA"
+SSTA_VERSION="0.1.2-BETA"
 PANEL_PATH="/etc/sentora"
 
 #--- Display the 'welcome' splash/user warning info..
@@ -70,6 +70,7 @@ SSH_REMOTE="ssh root@$PANEL_FQDN" # check this
 
 # Get other remote server info
 remotemysqlpassword=$($SSH_REMOTE cat /etc/sentora/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
+REMOTE_HOSTNAME=$($SSH_REMOTE $PANEL_PATH/panel/bin/setso --show sentora_domain)
 
 # Get Remote OS version
 if $SSH_REMOTE [ -f /etc/centos-release ]; then
@@ -86,9 +87,6 @@ else
     REMOTE_OS=$(uname -s)
     REMOTE_VER=$(uname -r)
 fi
-
-#REMOTE_OS=$($SSH_REMOTE "lsb_release -d")
-#LOCAL_OS=$(lsb_release -d)
 
 # Check OS's Match. Will add support to transfer to other OS's SOON.
 if [ "$OS" == "$REMOTE_OS" ]; then
@@ -114,6 +112,9 @@ fi
 # -------------------------------------------------------------------------------
 ## Prepare panel for transfer
 # -------------------------------------------------------------------------------
+
+# Stop Sentora services to prevent new data coming in from (apache, dovecot, postfix, proftpd)
+
 
 ## Prepare Database for transfer
 # Run Mysql_upgrade to check/fix any issues.
@@ -152,7 +153,7 @@ rsync -v -a -e ssh ~/sentora_backup.sql root@$PANEL_FQDN:~/sentora_backup.sql
 ## SSH in to Remote Server for setup
 # -------------------------------------------------------------------------------
 
-##Setup root user password, restore DB & check DB
+##Setup MySQL root user password, restore DB & check DB
 
 # Setup/change new server Mysql root password to current password
 while ! $SSH_REMOTE "mysql -u root -p'$remotemysqlpassword' -e ';'" ; do
@@ -193,8 +194,19 @@ if [ "$OS" != "$REMOTE_OS" ]; then
 	fi
 fi
 
-## Setup Folder/files & permissions if needed
+## Setup any final touches
 
+# Replace saved Remote hostname back. To prevent issues with new remote hostname setup.
+echo -e "\n-Changing Sentora domain back to prevent setup issues on new remote server ...\n"
+$SSH_REMOTE $PANEL_PATH/panel/bin/setso --set sentora_domain "$REMOTE_HOSTNAME"
+
+# Set apache daemon to build vhosts file.
+$SSH_REMOTE $PANEL_PATH/panel/bin/setso --set apache_changed "true"
+
+# Run Daemon
+$SSH_REMOTE php -d "sp.configuration_file=/etc/sentora/configs/php/sp/sentora.rules" -q $PANEL_PATH/panel/bin/daemon.php
+
+# -------------------------------------------------------------------------------
 
 ## ALL DONE
 # Wait until the user have read before restarts the server...
@@ -209,4 +221,3 @@ if [[ "$INSTALL" != "auto" ]] ; then
     done
     $SSH_REMOTE "shutdown -r now"
 fi
-
