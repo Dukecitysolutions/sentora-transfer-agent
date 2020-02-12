@@ -1,6 +1,6 @@
 # Sentora Transfer Agent (STA)
 
-* Version: 0.1.2-BETA
+* Version: 0.1.3-BETA
 
 ## Description
 
@@ -16,6 +16,7 @@ Sentora Transfer Agent (STA) Copies all folder/files/DB below -
 
 Automates tasks to new server like:
 * Copying files above
+* Update new server hostname in /etc/hosts & /etc/hostname
 * Changing MySQL root password
 * Exporting/Importing databases
 * Checking Databases for issues
