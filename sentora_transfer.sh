@@ -200,9 +200,14 @@ fi
 
 ## Setup any final touches
 
-# Replace saved Remote hostname back. To prevent issues with new remote hostname setup.
-echo -e "\n-Changing Sentora domain back to prevent setup issues on new remote server ...\n"
-$SSH_REMOTE $PANEL_PATH/panel/bin/setso --set sentora_domain "$REMOTE_HOSTNAME"
+# Transfer hostname to Remote /etc/hosts & /etc/hostname files
+LOCALHOSTNAME=$($PANEL_PATH/panel/bin/setso --show sentora_domain)
+sed -i 's|'"$REMOTE_HOSTNAME"'|'"$LOCALHOSTNAME"'|g' /etc/hosts
+sed -i 's|'"$REMOTE_HOSTNAME"'|'"$LOCALHOSTNAME"'|g' /etc/hostname
+
+# Replace saved Remote hostname back. To prevent issues with new remote hostname setup. CHECK THIS
+#echo -e "\n-Changing Sentora domain back to prevent setup issues on new remote server ...\n"
+#$SSH_REMOTE $PANEL_PATH/panel/bin/setso --set sentora_domain "$REMOTE_HOSTNAME"
 
 # Set apache daemon to build vhosts file.
 $SSH_REMOTE $PANEL_PATH/panel/bin/setso --set apache_changed "true"
@@ -214,7 +219,10 @@ else
 	$SSH_REMOTE php -q $PANEL_PATH/panel/bin/daemon.php
 fi
 
-# -------------------------------------------------------------------------------
+echo -e "\n# -------------------------------------------------------------------------------"
+echo -e "\nDont forget to change your panels domain DNS to your NEW servers IP.\n"
+echo -e "\nAlso dont forget to change all your sites DNS to your NEW servers IP.\n"
+echo -e "\nAll done!\n"
 
 ## ALL DONE
 # Wait until the user have read before restarts the server...
