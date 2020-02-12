@@ -208,7 +208,11 @@ $SSH_REMOTE $PANEL_PATH/panel/bin/setso --set sentora_domain "$REMOTE_HOSTNAME"
 $SSH_REMOTE $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 
 # Run Daemon
-$SSH_REMOTE php -d "sp.configuration_file=/etc/sentora/configs/php/sp/sentora.rules" -q $PANEL_PATH/panel/bin/daemon.php
+if $SSH_REMOTE [ -f /etc/sentora/configs/php/sp/sentora.rules ]; then
+	$SSH_REMOTE php -d "sp.configuration_file=/etc/sentora/configs/php/sp/sentora.rules" -q $PANEL_PATH/panel/bin/daemon.php
+else
+	$SSH_REMOTE php -q $PANEL_PATH/panel/bin/daemon.php
+fi
 
 # -------------------------------------------------------------------------------
 
