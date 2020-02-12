@@ -60,9 +60,13 @@ fi
 read -e -p "Enter HOSTNAME/IP of REMOTE SERVER to Transfer Sentora panel too: " PANEL_FQDN
 
 # SSH key setup for client/server
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-ssh-keygen -t rsa
+
+# should help with destroying pre setup root key for systems
+if [ ! -f ~/.ssh/id_rsa.pub ]; then
+	mkdir -p ~/.ssh
+	chmod 700 ~/.ssh
+	ssh-keygen -t rsa
+fi
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@$PANEL_FQDN
 
 # Set ssh call
